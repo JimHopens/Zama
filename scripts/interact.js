@@ -1,21 +1,19 @@
-// scripts/interact.js
 const { ethers } = require("hardhat");
+const fs = require("fs");
 
 async function main() {
   const [deployer] = await ethers.getSigners();
+  const contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
-  // Адрес ранее задеплоенного контракта Lock
-  const contractAddress = "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512";
+  // Явно подгружаем ABI из artifacts
+  const abi = require("../artifacts/contracts/Lock.sol/Lock.json").abi;
 
-  // Подключаемся к контракту Lock
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = Lock.attach(contractAddress);
+  const lock = new ethers.Contract(contractAddress, abi, deployer);
 
   // Чтение значения
   const unlockTime = await lock.unlockTime();
   console.log("Unlock time:", new Date(unlockTime * 1000).toLocaleString());
 
-  // Попытка разблокировки (если время пришло)
   try {
     const tx = await lock.withdraw();
     await tx.wait();
